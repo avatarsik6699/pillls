@@ -1,9 +1,9 @@
 {
-  "name": "pilllsbot",
+  "name": "pillls",
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "homepage": "https://avatarsik6699.github.io/pilllsbot",
+  "homepage": "https://avatarsik6699.github.io/pillls",
   "scripts": {
     "deploy": "gh-pages -d dist",
     "dev": "vite",
