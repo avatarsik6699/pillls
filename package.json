@@ -1,9 +1,9 @@
 {
-  "name": "reactjs-template",
+  "name": "pilllsbot",
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "homepage": "https://telegram-mini-apps.github.io/reactjs-template",
+  "homepage": "https://avatarsik6699.github.io/pilllsbot",
   "scripts": {
     "deploy": "gh-pages -d dist",
     "dev": "vite",
