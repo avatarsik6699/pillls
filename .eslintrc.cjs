@@ -59,10 +59,13 @@ module.exports = {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
 
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
 
 
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
+    'import/no-named-as-default-member': 'off',
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",

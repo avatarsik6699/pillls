@@ -1,49 +1,33 @@
-import { SDKProvider, useLaunchParams } from '@telegram-apps/sdk-react';
-import { TonConnectUIProvider } from '@tonconnect/ui-react';
-import { type FC, useEffect, useMemo } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SDKProvider, useLaunchParams } from "@telegram-apps/sdk-react";
+import { useEffect } from "react";
 
-import { App } from '@/components/App.tsx';
-import { ErrorBoundary } from '@/components/ErrorBoundary.tsx';
+import { App } from "@/components/App.tsx";
+import ErrorBoundaryAdapter from "@/shared/ui/ErrorBoundaryAdapter/ErrorBoundaryAdapter";
 
-const ErrorBoundaryError: FC<{ error: unknown }> = ({ error }) => (
-  <div>
-    <p>An unhandled error occurred:</p>
-    <blockquote>
-      <code>
-        {error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : JSON.stringify(error)}
-      </code>
-    </blockquote>
-  </div>
-);
+import { ThemeProvider } from "./ThemeProvider/ThemeProvider";
 
-const Inner: FC = () => {
-  const debug = useLaunchParams().startParam === 'debug';
-  const manifestUrl = useMemo(() => {
-    return new URL('tonconnect-manifest.json', window.location.href).toString();
-  }, []);
+const client = new QueryClient();
+
+export const Root: React.FC = () => {
+  const debug = useLaunchParams().startParam === "debug" && false;
 
   // Enable debug mode to see all the methods sent and events received.
   useEffect(() => {
     if (debug) {
-      import('eruda').then((lib) => lib.default.init());
+      import("eruda").then(lib => lib.default.init());
     }
   }, [debug]);
 
   return (
-    <TonConnectUIProvider manifestUrl={manifestUrl}>
-      <SDKProvider acceptCustomStyles debug={debug}>
-        <App/>
-      </SDKProvider>
-    </TonConnectUIProvider>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <QueryClientProvider client={client}>
+        <ErrorBoundaryAdapter>
+          <SDKProvider acceptCustomStyles debug={debug}>
+            <App />
+          </SDKProvider>
+        </ErrorBoundaryAdapter>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
-
-export const Root: FC = () => (
-  <ErrorBoundary fallback={ErrorBoundaryError}>
-    <Inner/>
-  </ErrorBoundary>
-);
