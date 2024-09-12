@@ -28,9 +28,13 @@ module.exports = {
   },
   plugins: [
     '@typescript-eslint',
-    'react'
+    'react',
+    'tailwindcss'
   ],
   rules: {
     'react/react-in-jsx-scope': 0,
+    'tailwindcss/no-custom-classname': 'error',
+    'tailwindcss/classnames-order': 'warn',
+    '@typescript-eslint/no-unused-vars': "warn"
   }
 };
