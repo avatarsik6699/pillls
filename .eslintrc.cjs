@@ -49,12 +49,19 @@ module.exports = {
         sourceType: "script",
       },
     },
+    {
+      files: ["src/shared/api/endpoints.ts"],
+      rules: {
+        "@typescript-eslint/no-explicit-any": "off",
+      },
+    },
   ],
 
   rules: {
     "tailwindcss/no-custom-classname": "error",
     "tailwindcss/classnames-order": "warn",
     "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-namespace": "off",
 
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
@@ -62,10 +69,9 @@ module.exports = {
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
 
-
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    'import/no-named-as-default-member': 'off',
+    "import/no-named-as-default-member": "off",
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
