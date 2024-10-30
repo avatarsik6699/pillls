@@ -1,72 +1,49 @@
 import "./index.css";
 
 import _ from "lodash";
-import React, { useCallback, useMemo } from "react";
+import React from "react";
 
 import { Command } from "@/components/ui/command";
+import type { Tip } from "@/shared/api/models";
+import type { Utils } from "@/shared/types";
 
-import type { HintProps } from "./components/Hint/Hint";
-import Hint from "./components/Hint/Hint";
-import HintsList from "./components/HintsList/List";
 import Input from "./components/Input/Input";
+import Hint from "./components/Tip/Tip";
+import type { TipsListProps } from "./components/TipsList/TipsList";
+import HintsList from "./components/TipsList/TipsList";
+import type { useSearchState } from "./hooks/useSearchState";
+
+type TipDto = Tip;
 
 interface Props {
-  hints: Array<{ label: string } & Pick<NonNullable<HintProps>, "value">>;
+  state: Utils.R<typeof useSearchState>;
+  tips: {
+    meta: Pick<TipsListProps, "status">;
+    list: TipDto[];
+    count: number;
+  };
 }
 
-const Search: React.FC<Props> = ({ hints }) => {
-  const [isOpen, setOpen] = React.useState(false);
-  const [isLoading, setLoading] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState("");
-
-  const onChangeLoadingBaseOnInputValue = useMemo(
-    () =>
-      _.debounce((inputValue: string) => {
-        setLoading(false);
-      }, 500),
-    []
-  );
-
-  const onChangeInputValue = useCallback(
-    (value: string) => {
-      setInputValue(value);
-      setOpen(Boolean(value));
-      setLoading(Boolean(value));
-      onChangeLoadingBaseOnInputValue(value);
-    },
-    [onChangeLoadingBaseOnInputValue]
-  );
-
-  const onSelectHint = useCallback((value: string) => {
-    setInputValue(value);
-    setOpen(false);
-  }, []);
-
-  const filteredCommands = useMemo(() => {
-    return hints.filter(item =>
-      item.label.toLowerCase().includes(inputValue.toLowerCase())
-    );
-  }, [hints, inputValue]);
-  console.log(filteredCommands);
+const Search: React.FC<Props> = ({ state, tips, ...props }) => {
   return (
     <Command
       shouldFilter={false}
-      className="rounded-md shadow-md md:min-w-[450px]"
+      className="relative top-0 z-auto overflow-visible shadow-md md:min-w-[450px]"
     >
       <Input
         onClickEnter={_.noop}
-        value={inputValue}
-        onValueChange={onChangeInputValue}
+        value={state.inputValue}
+        onValueChange={state.onChangeInputValue}
       />
 
       <HintsList
-        count={filteredCommands.length}
-        isLoading={isLoading}
-        isOpen={isOpen}
+        count={tips.count}
+        status={tips.meta.status}
+        isOpen={state.isOpen}
       >
-        {filteredCommands.map(({ label, ...item }, idx) => (
-          <Hint {...item} onSelect={onSelectHint} key={idx}>
-            {label}
+        {tips.list.map(item => (
+          <Hint onSelect={state.onSelectTip} key={item.id}>
+            {item.name}
           </Hint>
         ))}
       </HintsList>

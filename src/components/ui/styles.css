@@ -1,0 +1,5 @@
+.drawer-handle {
+  > span {
+    @apply mx-auto mt-4 h-2 w-[100px] rounded-full bg-slate-100 dark:bg-slate-800;
+  }
+}

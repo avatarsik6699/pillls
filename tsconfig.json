@@ -21,8 +21,10 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "types": ["tailwindcss", "node"],
+    "typeRoots": ["./node_modules/@yandex/ymaps3-types"],
     "baseUrl": ".",
     "paths": {
+      "ymaps3": ["./node_modules/@yandex/ymaps3-types"],
       "@/*": [
         "./src/*"
       ]

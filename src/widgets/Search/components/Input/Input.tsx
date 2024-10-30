@@ -24,7 +24,7 @@ const Input: React.FC<Props> = ({ onClickEnter, ...props }) => {
     <CommandInput
       {...props}
       onKeyDown={onKeyDown}
-      placeholder="Введите название препарата..."
+      placeholder="Введите название препарата (мин. 3 символа)"
     />
   );
 };

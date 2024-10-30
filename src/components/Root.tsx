@@ -7,10 +7,18 @@ import ErrorBoundaryAdapter from "@/shared/ui/ErrorBoundaryAdapter/ErrorBoundary
 
 import { ThemeProvider } from "./ThemeProvider/ThemeProvider";
 
-const client = new QueryClient();
+const client = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 0,
+      refetchOnMount: false,
+    },
+  },
+});
 
 export const Root: React.FC = () => {
-  const debug = useLaunchParams().startParam === "debug" && false;
+  const debug = useLaunchParams().startParam === "debug";
 
   // Enable debug mode to see all the methods sent and events received.
   useEffect(() => {

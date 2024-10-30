@@ -1,8 +1,10 @@
 import "./Link.css";
 
-import { classNames, useUtils } from "@telegram-apps/sdk-react";
+import { useUtils } from "@telegram-apps/sdk-react";
 import { type FC, type MouseEventHandler, useCallback } from "react";
 import { Link as RouterLink, type LinkProps } from "react-router-dom";
+
+import { cn } from "@/lib/utils";
 
 export const Link: FC<LinkProps> = ({
   className,
@@ -45,7 +47,7 @@ export const Link: FC<LinkProps> = ({
       {...rest}
       to={to}
       onClick={onClick}
-      className={classNames(className, "link")}
+      className={cn(className, "hover:transition-colors hover:text-opacity-50")}
     />
   );
 };

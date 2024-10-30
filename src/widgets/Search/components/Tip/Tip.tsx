@@ -5,13 +5,15 @@ import { cn } from "@/lib/utils";
 
 interface Props extends React.ComponentPropsWithoutRef<typeof CommandItem> {}
 
-const Hint = React.forwardRef<React.ElementRef<typeof CommandItem>, Props>(
+const Tip = React.forwardRef<React.ElementRef<typeof CommandItem>, Props>(
   ({ className, children, ...props }, ref) => {
     return (
       <CommandItem
         ref={ref}
         {...props}
-        className={cn(className, { "cursor-pointer": !props.disabled })}
+        className={cn(className, {
+          "cursor-pointer border-2": !props.disabled,
+        })}
       >
         {children}
       </CommandItem>
@@ -19,6 +21,6 @@ const Hint = React.forwardRef<React.ElementRef<typeof CommandItem>, Props>(
   }
 );
 
-Hint.displayName = "Hint";
-export default Hint;
-export type { Props as HintProps };
+Tip.displayName = "Tip";
+export default Tip;
+export type { Props as TipProps };

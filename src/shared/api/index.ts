@@ -1,12 +1,21 @@
-import ky from "ky";
+import {
+  positionFindAll,
+  positionFindOne,
+  productFindAll,
+  tipFindAll,
+} from "./endpoints";
 
-console.log(process.env.NODE_ENV);
-const baseUrl =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://scrapper-avb7cvmws-avatarsik6699s-projects.vercel.app";
+export const api = {
+  tip: {
+    list: tipFindAll,
+  },
 
-export const api = ky.extend({
-  prefixUrl: baseUrl,
-  retry: 0,
-});
+  product: {
+    list: productFindAll,
+  },
+
+  position: {
+    list: positionFindAll,
+    one: positionFindOne,
+  },
+};

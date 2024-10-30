@@ -1,0 +1,353 @@
+openapi: 3.0.0
+paths:
+  /api/position/list:
+    post:
+      operationId: positionFindAll
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PositionsListBodyDto'
+      responses:
+        '200':
+          description: List of positions with pagination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionsListResponseDto'
+  /api/position/one/{positionId}:
+    get:
+      operationId: positionFindOne
+      parameters:
+        - name: positionId
+          required: true
+          in: path
+          description: The ID of the position
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: query
+          description: The ID of the product
+          schema:
+            type: string
+        - name: name
+          required: true
+          in: query
+          description: The name of the product
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Position details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+  /api/tip/list:
+    get:
+      operationId: tipFindAll
+      parameters:
+        - name: q
+          required: true
+          in: query
+          example: Product Name
+          description: Name of the product to search tips for
+          schema:
+            type: string
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 10
+            type: number
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tip'
+  /api/product/list:
+    get:
+      operationId: productFindAll
+      parameters:
+        - name: name
+          required: true
+          in: query
+          description: The name of the product
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of products and active product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsListResponseDto'
+info:
+  title: Документация
+  description: Документация к запросам
+  version: '1.0'
+  contact: {}
+tags:
+  - name: initialTag
+    description: ''
+servers: []
+components:
+  schemas:
+    ProductDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the product
+        name:
+          type: string
+          description: The name of the product
+      required:
+        - id
+        - name
+    FilterByDto:
+      type: object
+      properties:
+        region:
+          type: number
+          description: The region ID
+        district:
+          type: number
+          description: The district ID
+        metro:
+          type: number
+          description: The metro ID
+        apteka:
+          type: string
+          description: The pharmacy name
+    PositionsListBodyDto:
+      type: object
+      properties:
+        product:
+          description: The product details
+          allOf:
+            - $ref: '#/components/schemas/ProductDto'
+        sortBy:
+          type: string
+          description: Sort by criteria
+          default: default
+          enum:
+            - default
+            - price
+        page:
+          type: number
+          description: Page number
+        filterBy:
+          description: Filter criteria
+          allOf:
+            - $ref: '#/components/schemas/FilterByDto'
+      required:
+        - product
+    Address:
+      type: object
+      properties:
+        lat:
+          type: string
+          example: '55.7558'
+          description: Latitude of the address
+        lng:
+          type: string
+          example: '37.6173'
+          description: Longitude of the address
+        street:
+          type: string
+          example: Tverskaya St
+          description: Street name
+        district:
+          type: string
+          example: Central District
+          description: District name
+          nullable: true
+        city:
+          type: string
+          example: Moscow
+          description: City name
+          nullable: true
+        metro:
+          type: string
+          example: Mayakovskaya
+          description: Metro station name
+          nullable: true
+      required:
+        - lat
+        - lng
+        - street
+    Pharmacy:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '12345'
+          description: Unique identifier of the pharmacy
+        name:
+          type: string
+          example: Central Pharmacy
+          description: Name of the pharmacy
+        address:
+          description: Address of the pharmacy
+          allOf:
+            - $ref: '#/components/schemas/Address'
+        phone:
+          type: string
+          example: +7 (495) 123-45-67
+          description: Phone number of the pharmacy
+        updateTime:
+          type: string
+          example: '2023-10-01T12:00:00Z'
+          description: Last update time
+          nullable: true
+        workTime:
+          type: string
+          example: 09:00 - 21:00
+          description: Work time
+          nullable: true
+        allhours:
+          type: boolean
+          example: true
+          description: Flag indicating if the pharmacy works 24/7
+          default: false
+      required:
+        - id
+        - name
+        - address
+        - phone
+        - allhours
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '12345'
+          description: Unique identifier of the product
+        name:
+          type: string
+          example: Анальгин | Флуоксетин
+          description: Сырое (оригинальное) название из данных
+        label:
+          type: string
+          example: Все | Анальгин | Флуоксетин
+          description: Название продукта для отображения в ui
+        dosage:
+          type: string
+          example: Product dosage
+          description: Dosage of the product
+          nullable: true
+        originCountry:
+          type: string
+          example: USA
+          description: Origin country of the product
+          nullable: true
+        pharmacologicalGroup:
+          type: string
+          example: Group A
+          description: Pharmacological group of the product
+          nullable: true
+        activeSubstance:
+          type: string
+          example: Substance X
+          description: Active substance of the product
+          nullable: true
+      required:
+        - id
+        - name
+        - label
+    Position:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '12345'
+          description: Unique identifier of the position
+        pharmacy:
+          description: Pharmacy details
+          allOf:
+            - $ref: '#/components/schemas/Pharmacy'
+        product:
+          description: Product details
+          allOf:
+            - $ref: '#/components/schemas/Product'
+        price:
+          type: string
+          example: '10.99'
+          description: Price of the position
+        quantity:
+          type: number
+          example: 5
+          description: Quantity of the position
+          nullable: true
+      required:
+        - id
+        - pharmacy
+        - product
+        - price
+    PaginationDto:
+      type: object
+      properties:
+        start:
+          type: number
+          description: Start index of the pagination
+        end:
+          type: number
+          description: End index of the pagination
+      required:
+        - start
+        - end
+    PositionsListResponseDto:
+      type: object
+      properties:
+        positions:
+          description: List of positions
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+        count:
+          type: number
+          description: Total count of positions
+        pagination:
+          description: Pagination details
+          allOf:
+            - $ref: '#/components/schemas/PaginationDto'
+      required:
+        - positions
+        - count
+        - pagination
+    Tip:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 550e8400-e29b-41d4-a716-446655440000
+          description: Unique identifier of the tip
+        name:
+          type: string
+          example: Tip Name
+          description: Name of the tip
+      required:
+        - id
+        - name
+    ProductsListResponseDto:
+      type: object
+      properties:
+        products:
+          description: List of products
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        active:
+          description: Active product
+          allOf:
+            - $ref: '#/components/schemas/Product'
+      required:
+        - products

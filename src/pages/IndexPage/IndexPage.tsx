@@ -1,147 +1,205 @@
 import { useThemeParams } from "@telegram-apps/sdk-react";
-import { useState } from "react";
-import { createQuery } from "react-query-kit";
+import { Spinner } from "@telegram-apps/telegram-ui";
+import { useEffect, useState } from "react";
 
-import { api } from "@/shared/api";
-import { PharmacyCard } from "@/widgets/PharmacyCard/PharmacyCard";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import PositionsCountFindBySearch from "@/entities/PositionsCountFindBySearch/PositionsCountFindBySearch";
+import FilterByProductTradeNames from "@/features/Filter/ui/FilterByProductTradeNames";
+import Filters from "@/features/Filters/Filters";
+import { usePaginationState } from "@/features/Pagination/hooks/usePaginationState";
+import Pagination from "@/features/Pagination/Pagination";
+import SortFilter from "@/features/SortFilter/SortFilter";
+import type { PositionsListBodyDtoSortBy } from "@/shared/api/models";
+import { useQueryParams } from "@/shared/hooks/useQueryParams";
+import type { DrawerWithMapProps } from "@/widgets/Map/DrawerWithMap/DrawerWithMap";
+import DrawerWithMap from "@/widgets/Map/DrawerWithMap/DrawerWithMap";
+import Position from "@/widgets/Position/Position";
+import { useSearchState } from "@/widgets/Search/hooks/useSearchState";
 import Search from "@/widgets/Search/Search";
 
-interface PharmacyItem {
-  name: string;
-  country: string;
-  pharmacy: string;
-  address: string;
-  price: string;
-  cost: string;
-}
+import { usePositionQuery } from "./model/usePositionQuery";
+import { useProductListQuery } from "./model/useProductListQuery";
+import { useTipListQuery } from "./model/useTipListQuery";
 
-const usePharmacyList = createQuery<
-  { items_found: number; items: PharmacyItem[] },
-  { searchValue: string }
->({
-  queryKey: ["pharmacy-list"],
-  retry: false,
-  staleTime: Infinity,
-  fetcher: async variables => {
-    console.log(variables);
-    return api
-      .get(`data`, { searchParams: { searchValue: variables.searchValue } })
-      .then(res => res.json());
-  },
-});
+type Filters = {
+  sortBy: PositionsListBodyDtoSortBy;
+};
+
+type QueryParams = {
+  q?: string;
+  tradeProductId?: string;
+  tradeProductName?: string;
+};
 
 export const IndexPage: React.FC = () => {
   const themeParams = useThemeParams();
-
-  const [inputValue, setInputValue] = useState("");
-  const [searchValue, setSearchValue] = useState("");
-
-  const pharmacyList = usePharmacyList({
-    variables: { searchValue },
-    enabled: Boolean(searchValue),
+  const qp = useQueryParams<QueryParams>();
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [mapData, setMapData] = useState<DrawerWithMapProps["data"]>({
+    title: null,
+    description: null,
+    coordinates: [30.336679, 59.930315],
+  });
+  const [filters, setFilters] = useState<Filters>({
+    sortBy: "default",
   });
 
-  console.log(pharmacyList);
+  const pagination = usePaginationState();
+  const search = useSearchState({
+    onSelect: value => qp.add({ q: value }),
+    onChangeInputValue: value => {
+      if (!value) qp.remove(["tradeProductId", "tradeProductName", "q"]);
+    },
+  });
 
-  return (
-    <main className="p-3">
-      <Search
-        hints={[
-          { value: "calendar", label: "Calendar" },
-          { value: "search-emoji", label: "Search Emoji" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Cala" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-          { value: "calculator", label: "Calculator" },
-        ]}
-      />
-      <ul className="flex flex-col gap-5">
-        <li>
-          <PharmacyCard />
-        </li>
-        <li>
-          <PharmacyCard />
-        </li>
-        <li>
-          <PharmacyCard />
-        </li>
-      </ul>
-      {/* <Input
-        after={
-          <IconButton
-            onClick={() => {
-              setSearchValue(inputValue);
-            }}
-            size="l"
-            mode="bezeled">
-            <IoIosSearch />
-          </IconButton>
+  const tips = useTipListQuery({
+    variables: { q: search.debInputValue },
+  });
+
+  const tradeProductsNames = useProductListQuery({
+    variables: { name: qp.get("q") },
+  });
+
+  const positions = usePositionQuery({
+    variables: {
+      ...filters,
+      page: pagination.page,
+      product: {
+        id: qp.get("tradeProductId")!,
+        name: qp.get("tradeProductName")!,
+      },
+    },
+  });
+
+  useEffect(function setInitialBaseProductNameIfExistsFx() {
+    const baseProductName = qp.get("q");
+
+    if (baseProductName) {
+      search.onSelectTip(baseProductName);
+    }
+  }, []);
+
+  useEffect(
+    function changeProductTradeNameFx() {
+      const { data } = tradeProductsNames;
+
+      if (data) {
+        const all = data.products.find(item => item.label === "Все");
+
+        if (all) {
+          qp.add({ tradeProductName: all.name, tradeProductId: all.id });
+        } else if (data.active) {
+          qp.add({
+            tradeProductName: data.active.name,
+            tradeProductId: data.active.id,
+          });
         }
-        autoFocus
-        header="Введите название препарата"
-        placeholder="Флуоксетин, анальгин..."
-        value={inputValue}
-        onChange={(e) => {
-          setInputValue(e.target.value || "");
+      }
+    },
+    [tradeProductsNames.data]
+  );
+  return (
+    <main>
+      <Search
+        state={search}
+        tips={{
+          list: tips.data?.list || [],
+          count: tips.data?.count || 0,
+          meta: {
+            status: tips.status,
+          },
         }}
       />
-      {pharmacyList.isLoading && (
-        <div className="flex h-96 items-center justify-center">
-          <Spinner size="l" />
-        </div>
+
+      {tradeProductsNames.status === "success" &&
+        tradeProductsNames.data.products.length > 0 && (
+          <Filters>
+            <FilterByProductTradeNames
+              onValueChange={value => {
+                pagination.onChangePage(1);
+
+                const tradeProduct = tradeProductsNames.data.products.find(
+                  item => item.id === value
+                );
+
+                if (tradeProduct) {
+                  qp.add({
+                    tradeProductName: tradeProduct.name,
+                    tradeProductId: tradeProduct.id,
+                  });
+                }
+              }}
+              value={qp.get("tradeProductId")}
+              items={tradeProductsNames.data.products.map(item => ({
+                value: item.id,
+                text: item.label,
+              }))}
+            />
+            <SortFilter
+              onCheckedChange={value => {
+                pagination.onChangePage(1);
+                setFilters(prev => ({
+                  ...prev,
+                  sortBy: value ? "price" : "default",
+                }));
+              }}
+            />
+          </Filters>
+        )}
+      {positions.status === "success" && (
+        <PositionsCountFindBySearch
+          count={positions.data.count}
+          product={{ name: qp.get("tradeProductName") || "" }}
+        />
       )}
-      {pharmacyList.isSuccess && (
-        <>
-          {Number(pharmacyList.data.items_found) === 0 && (
-            <div className="flex h-96 items-center justify-center">
-              <Text>Ничего не найдено</Text>
-            </div>
+      {positions.isLoading && (
+        <section className="flex h-[calc(100dvh-210px)] items-center justify-center">
+          <Spinner size="l" className="text-neutral-500" />
+        </section>
+      )}
+      <ScrollArea className="h-[calc(100dvh-220px)] overflow-auto">
+        <ul className="flex flex-col gap-y-5 p-4">
+          {positions.data?.positions.map((item, idx) => (
+            <li key={idx}>
+              <Position
+                price={item.price}
+                pharmacy={{
+                  ...item.pharmacy,
+                  onOpenMapByAddress: () => {
+                    setMapData({
+                      title: item.pharmacy.name,
+                      description: item.pharmacy.address.street,
+                      coordinates: [
+                        Number.parseFloat(item.pharmacy.address.lat),
+                        Number.parseFloat(item.pharmacy.address.lng),
+                      ],
+                    });
+
+                    setIsMapOpen(true);
+                  },
+                }}
+                product={item.product}
+              />
+            </li>
+          ))}
+        </ul>
+      </ScrollArea>
+      <section className="flex items-center justify-center py-2">
+        {positions.status === "success" &&
+          positions.data.pagination.end > 1 && (
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={positions.data.pagination.end}
+              onChangePage={pagination.onChangePage}
+            />
           )}
-          {Number(pharmacyList.data.items_found) > 0 && (
-            <>
-              <div style={{ background: themeParams.bgColor }} className={`flex items-center gap-2 p-3`}>
-                <Text weight="3">Найдено элементов: </Text>
-                <Badge type="number">{pharmacyList.data?.items_found}</Badge>
-              </div>
-              <List>
-                {pharmacyList.data?.items?.map((item, idx) => {
-                  return (
-                    <>
-                      <Section key={idx} header={item.name} footer={item.address}>
-                        <Cell subtitle="Цена" hovered={false} before={<GiPayMoney />}>
-                          {item.cost}
-                        </Cell>
-                        <Cell subtitle="Производитель" hovered={false} before={<IoFlagOutline />}>
-                          {item.country}
-                        </Cell>
-                        <Cell subtitle="Аптека" hovered={false} before={<MdLocalPharmacy />}>
-                          {item.pharmacy}
-                        </Cell>
-                        <Cell subtitle="Дата последнего обновления" hovered={false} before={<CiCalendarDate />}>
-                          {item.price}
-                        </Cell>
-                      </Section>
-                      <Divider />
-                    </>
-                  );
-                })}
-              </List>
-            </>
-          )}
-        </>
-      )} */}
+      </section>
+
+      <DrawerWithMap
+        data={mapData}
+        isOpen={isMapOpen}
+        onOpenChange={setIsMapOpen}
+      />
     </main>
   );
 };

@@ -1,14 +1,11 @@
 import {
-  bindMiniAppCSSVars,
-  bindThemeParamsCSSVars,
-  bindViewportCSSVars,
   useLaunchParams,
   useMiniApp,
   useThemeParams,
   useViewport,
 } from "@telegram-apps/sdk-react";
 import { AppRoot } from "@telegram-apps/telegram-ui";
-import { type FC, useEffect } from "react";
+import { type FC } from "react";
 import { Navigate, Route } from "react-router-dom";
 
 import { routes } from "@/navigation/routes.tsx";
@@ -20,17 +17,17 @@ export const App: FC = () => {
   const themeParams = useThemeParams();
   const viewport = useViewport();
 
-  useEffect(() => {
-    return bindMiniAppCSSVars(miniApp, themeParams);
-  }, [miniApp, themeParams]);
+  // useEffect(() => {
+  //   return bindMiniAppCSSVars(miniApp, themeParams);
+  // }, [miniApp, themeParams]);
 
-  useEffect(() => {
-    return bindThemeParamsCSSVars(themeParams);
-  }, [themeParams]);
+  // useEffect(() => {
+  //   return bindThemeParamsCSSVars(themeParams);
+  // }, [themeParams]);
 
-  useEffect(() => {
-    return viewport && bindViewportCSSVars(viewport);
-  }, [viewport]);
+  // useEffect(() => {
+  //   return viewport && bindViewportCSSVars(viewport);
+  // }, [viewport]);
 
   return (
     <AppRoot

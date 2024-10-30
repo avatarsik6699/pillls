@@ -150,7 +150,11 @@ const CommandLoading = forwardRef<
   ElementRef<typeof CommandPrimitive.Loading>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Loading>
 >(({ className, ...props }, ref) => (
-  <CommandPrimitive.Loading ref={ref} className={cn(className)} {...props} />
+  <CommandPrimitive.Loading
+    ref={ref}
+    className={cn("py-6 text-center text-sm", className)}
+    {...props}
+  />
 ));
 
 CommandLoading.displayName = CommandPrimitive.Loading.displayName;
